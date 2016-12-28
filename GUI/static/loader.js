@@ -3,8 +3,8 @@ var channels = {
       socket: null,
 
       start: function() {
-         html.socket = new WebSocket("ws://" + location.host + "/html");
-         html.socket.onmessage = function(event) {
+         channels.html.socket = new WebSocket("ws://" + location.host + "/html");
+         channels.html.socket.onmessage = function(event) {
 
          }
       }
@@ -14,8 +14,8 @@ var channels = {
       socket: null,
 
       start: function() {
-         data.socket = new WebSocket("ws://" + location.host + "/data");
-         data.socket.onmessage = function(event) {
+         channels.socket = new WebSocket("ws://" + location.host + "/data");
+         channels.socket.onmessage = function(event) {
 
          }
       }

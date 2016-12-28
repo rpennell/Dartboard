@@ -24,20 +24,20 @@
       <link href="{{ static_url("emoji.css") }}" rel="stylesheet">
    </head>
    <body>
-      <p id="js-not-enabled" class="little">Cannot connect. Javascript not enabled. Please enable Javascript in browser settings.</p>
-      <div style="display:none" id='global'>
+      <div id='global'>
          <div id='title'>
             <p class="big">Dartboard: Sneezy</p>
          </div>
          <div id='content'>
-            <div id="error">
-               <p class="little">Welcome! </p>
-            </div>
-            <div style="visibility: hidden" id="animation"></div>
+            <p class="big" id="welcome-message">Welcome!</p>
+            <div id="loader"></div>
             <script>
             $(document).ready(function() {
-               $('#js-not-enabled').hide()
-               $('#global').show()
+               console.log(updater)
+               console.log(channels.data)
+               updater.start()
+               // channels.html.start()
+               channels.data.start()
             });
             </script>
          </div>

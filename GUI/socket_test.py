@@ -13,120 +13,106 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+"""Simplified chat demo for websockets.
+
+Authentication, error handling, etc are left as an exercise for the reader :)
+"""
+
+from functools import partial
+import time
 
 import logging
 import tornado.escape
 import tornado.ioloop
+import tornado.options
 import tornado.web
+import tornado.websocket
 import os.path
 import uuid
 
-from tornado.concurrent import Future
-from tornado import gen
-from tornado.options import define, options, parse_command_line
+from tornado.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
-define("debug", default=8090, help="run in debug mode")
+
+# alldata = [
+#     {'body': u'{"State":0,"Data":[["x01","BattleShip"],["Option 1","Option 2","Option 3"],["301","501","701"]]}'},
+#     {'body': u'{"State":1,"Data":{"Heading":["Battlefield","Round","Throw"],"PlayerNames":["Scott","Trent","Ryan"],"PlayerScores":["ScottScore","TrentScore","RyanScore"]}}'},
+#     {'body': u'{"State":2,"Data":{"Heading":["X01","Round","Throw"],"PlayerNames":["Scott","Trent","Ryan"],"PlayerScores":["ScottScore","TrentScore","RyanScore"]}}'},
+#     {'body': u'{"State":3,"Data":["Scott"]}'}
+# ]
+state = {'body': u'{"State":0,"Data":[["x01","BattleShip"],["Option 1","Option 2","Option 3"],["301","501","701"]]}'},
 
 
-class MessageBuffer(object):
+
+class Application(tornado.web.Application):
     def __init__(self):
-        self.waiters = set()
-        self.cache = []
-        self.cache_size = 200
-
-    def wait_for_messages(self, cursor=None):
-        # Construct a Future to return to our caller.  This allows
-        # wait_for_messages to be yielded from a coroutine even though
-        # it is not a coroutine itself.  We will set the result of the
-        # Future when results are available.
-        result_future = Future()
-        if cursor:
-            new_count = 0
-            for msg in reversed(self.cache):
-                if msg["id"] == cursor:
-                    break
-                new_count += 1
-            if new_count:
-                result_future.set_result(self.cache[-new_count:])
-                return result_future
-        self.waiters.add(result_future)
-        return result_future
-
-    def cancel_wait(self, future):
-        self.waiters.remove(future)
-        # Set an empty result to unblock any coroutines waiting.
-        future.set_result([])
-
-    def new_messages(self, messages):
-        # logging.info("Sending new message to %r listeners", len(self.waiters))
-        for future in self.waiters:
-            future.set_result(messages)
-        self.waiters = set()
-        self.cache.extend(messages)
-        if len(self.cache) > self.cache_size:
-            self.cache = self.cache[-self.cache_size:]
-
-
-# Making this a non-singleton is left as an exercise for the reader.
-global_message_buffer = MessageBuffer()
+        handlers = [
+            (r"/", MainHandler),
+            (r"/html", HTMLHandler),
+            (r"/data", DataHandler),
+        ]
+        settings = dict(
+            cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+            template_path=os.path.join(os.path.dirname(__file__), "GUI/templates"),
+            static_path=os.path.join(os.path.dirname(__file__), "GUI/static"),
+            xsrf_cookies=True,
+        )
+        super(Application, self).__init__(handlers, **settings)
 
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("index.html", messages=global_message_buffer.cache)
+        self.render("index.html")
 
+class HTMLHandler(tornado.websocket.WebSocketHandler):
+    waiters = set()
 
-class MessageNewHandler(tornado.web.RequestHandler):
-    def post(self):
-        message = {
+    def get_compression_options(self):
+        # Non-None enables compression with default options.
+        return {}
+
+    def open(self):
+        logging.info("connection opened")
+        HTMLHandler.waiters.add(self)
+
+    def on_close(self):
+        logging.info("connection closed")
+        HTMLHandler.waiters.remove(self)
+
+    @classmethod
+    def update_cache(cls, chat):
+        cls.cache.append(chat)
+        if len(cls.cache) > cls.cache_size:
+            cls.cache = cls.cache[-cls.cache_size:]
+
+    @classmethod
+    def send_updates(cls, chat):
+        logging.info("sending message to %d waiters", len(cls.waiters))
+        logging.info("State: %s", str(state))
+        for waiter in cls.waiters:
+            try:
+                waiter.write_message(chat)
+            except:
+                logging.error("Error sending message", exc_info=True)
+
+    def on_message(self, message):
+        logging.info("got message %r", message)
+        parsed = tornado.escape.json_decode(message)
+        chat = {
             "id": str(uuid.uuid4()),
-            "body": self.get_argument("body"),
-        }
-        # to_basestring is necessary for Python 3's json encoder,
-        # which doesn't accept byte strings.
-        message["html"] = tornado.escape.to_basestring(
-            self.render_string("message.html", message=message))
-        if self.get_argument("next", None):
-            self.redirect(self.get_argument("next"))
-        else:
-            self.write(message)
-        global_message_buffer.new_messages([message])
+            "body": parsed["body"],
+            }
+        chat["html"] = tornado.escape.to_basestring(
+            self.render_string("message.html", message=chat))
 
+        ChatSocketHandler.update_cache(chat)
+        ChatSocketHandler.send_updates(chat)
 
-class MessageUpdatesHandler(tornado.web.RequestHandler):
-    @gen.coroutine
-    def post(self):
-        cursor = self.get_argument("cursor", None)
-        # Save the future returned by wait_for_messages so we can cancel
-        # it in wait_for_messages
-        self.future = global_message_buffer.wait_for_messages(cursor=cursor)
-        messages = yield self.future
-        if self.request.connection.stream.closed():
-            return
-        self.write(dict(messages=messages))
-
-    def on_connection_close(self):
-        global_message_buffer.cancel_wait(self.future)
-
-
-def main():
-    parse_command_line()
-    app = tornado.web.Application(
-        [
-            (r"/", MainHandler),
-            (r"/a/message/new", MessageNewHandler),
-            (r"/a/message/updates", MessageUpdatesHandler),
-            ],
-        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
-        template_path=os.path.join(os.path.dirname(__file__), "templates"),
-        static_path=os.path.join(os.path.dirname(__file__), "static"),
-        xsrf_cookies=True,
-        debug=options.debug,
-        )
+if __name__ = '__main__':
+    tornado.options.parse_command_line()
+    app = Application()
     app.listen(options.port)
+
+    tornado.ioloop.IOLoop.current().add_callback(partial(callback))
+
     tornado.ioloop.IOLoop.current().start()
-
-
-if __name__ == "__main__":
-    main()
