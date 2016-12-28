@@ -1,6 +1,7 @@
 # Project Specific #
 ####################
 Notes.txt
+backup/*
 test.py
 
 # Compiled source #
