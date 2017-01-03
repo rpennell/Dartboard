@@ -6,8 +6,9 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
 
       <!-- Uncomment for direct open -->
-      <!-- <script src="../static/guiEngine.js" type=text/javascript></script>
-      <script src="../static/loader.js" type=text/javascript></script>
+      <!-- <script src="../static/guiEngine.js" type=text/javascript></script> -->
+      <!-- <link rel="shortcut icon" href="../static/favicon.ico"> -->
+      <!-- <script src="../static/loader.js" type=text/javascript></script>
       <link rel="stylesheet" href="../static/index.css">
       <link rel="stylesheet" href="../static/colors.css">
 
@@ -15,7 +16,8 @@
       <link href="../static/emoji.css" rel="stylesheet"> -->
 
       <!-- Uncomment for Tornado open -->
-      <script src="{{ static_url("guiEngine.js") }}" type=text/javascript></script>
+      <!-- <script src="{{ static_url("guiEngine.js") }}" type=text/javascript></script> -->
+      <link rel="shortcut icon" href="{{ static_url('favicon.ico') }}">
       <script src="{{ static_url("loader.js") }}" type=text/javascript></script>
       <link rel="stylesheet" href="{{ static_url("index.css") }}">
       <link rel="stylesheet" href="{{ static_url("colors.css") }}">
@@ -24,23 +26,44 @@
       <link href="{{ static_url("emoji.css") }}" rel="stylesheet">
    </head>
    <body>
+      <!-- <div id="debug" style="display:none; height:10%;">
+         <div id="btn" class="row">
+            <script>
+            for (var key in channels) {
+               $('#btn').append('<div class="col-6"><p class="little">' + key + '</p></div>')
+            }
+            </script>
+            <div class="col-6">
+               <p>one</p>
+            </div>
+            <div class="col-6">
+               <p>two</p>
+            </div>
+         </div>
+      </div> -->
       <div id='global'>
          <div id='title'>
             <p class="big">Dartboard: Sneezy</p>
          </div>
          <div id='content'>
-            <p class="big" id="welcome-message">Welcome!</p>
+            <p class="big" id="welcome-message">Welcome!!</p>
             <div id="loader"></div>
-            <script>
-            $(document).ready(function() {
-               console.log(updater)
-               console.log(channels.data)
-               updater.start()
-               // channels.html.start()
-               channels.data.start()
-            });
-            </script>
          </div>
       </div>
+      <script>
+      $(document).ready(function() {
+         console.log(channels);
+         channels.html.start();
+         channels.data.start();
+         // window.onbeforeunload = function() {
+         //    for (var key in channels) {
+         //       channels[key].end()
+         //    }
+         // }
+         // if (false) {
+         //    $("#debug").show();
+         // }
+      });
+      </script>
    </body>
 </html>

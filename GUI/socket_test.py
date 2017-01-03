@@ -13,13 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-"""Simplified chat demo for websockets.
 
-Authentication, error handling, etc are left as an exercise for the reader :)
-"""
-
-from functools import partial
-import time
+# Modified
 
 import logging
 import tornado.escape
@@ -29,33 +24,26 @@ import tornado.web
 import tornado.websocket
 import os.path
 import uuid
+from time import sleep
 
 from tornado.options import define, options
 
 define("port", default=8888, help="run on the given port", type=int)
-
-# alldata = [
-#     {'body': u'{"State":0,"Data":[["x01","BattleShip"],["Option 1","Option 2","Option 3"],["301","501","701"]]}'},
-#     {'body': u'{"State":1,"Data":{"Heading":["Battlefield","Round","Throw"],"PlayerNames":["Scott","Trent","Ryan"],"PlayerScores":["ScottScore","TrentScore","RyanScore"]}}'},
-#     {'body': u'{"State":2,"Data":{"Heading":["X01","Round","Throw"],"PlayerNames":["Scott","Trent","Ryan"],"PlayerScores":["ScottScore","TrentScore","RyanScore"]}}'},
-#     {'body': u'{"State":3,"Data":["Scott"]}'}
-# ]
-state = {'body': u'{"State":0,"Data":[["x01","BattleShip"],["Option 1","Option 2","Option 3"],["301","501","701"]]}'},
-
-
+define("debug", default=True, help="run in debug mode")
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
-            (r"/html", HTMLHandler),
+            (r"/html", HtmlHandler),
             (r"/data", DataHandler),
         ]
         settings = dict(
             cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
-            template_path=os.path.join(os.path.dirname(__file__), "GUI/templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "GUI/static"),
+            template_path=os.path.join(os.path.dirname(__file__), "templates"),
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=True,
+            debug=options.debug,
         )
         super(Application, self).__init__(handlers, **settings)
 
@@ -64,55 +52,64 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")
 
-class HTMLHandler(tornado.websocket.WebSocketHandler):
-    waiters = set()
-
-    def get_compression_options(self):
-        # Non-None enables compression with default options.
-        return {}
+class HtmlHandler(tornado.websocket.WebSocketHandler):
+    clients = set()
 
     def open(self):
-        logging.info("connection opened")
-        HTMLHandler.waiters.add(self)
+        HtmlHandler.clients.add(self)
 
     def on_close(self):
-        logging.info("connection closed")
-        HTMLHandler.waiters.remove(self)
-
-    @classmethod
-    def update_cache(cls, chat):
-        cls.cache.append(chat)
-        if len(cls.cache) > cls.cache_size:
-            cls.cache = cls.cache[-cls.cache_size:]
-
-    @classmethod
-    def send_updates(cls, chat):
-        logging.info("sending message to %d waiters", len(cls.waiters))
-        logging.info("State: %s", str(state))
-        for waiter in cls.waiters:
-            try:
-                waiter.write_message(chat)
-            except:
-                logging.error("Error sending message", exc_info=True)
+        HtmlHandler.clients.remove(self)
 
     def on_message(self, message):
-        logging.info("got message %r", message)
-        parsed = tornado.escape.json_decode(message)
-        chat = {
-            "id": str(uuid.uuid4()),
-            "body": parsed["body"],
-            }
-        chat["html"] = tornado.escape.to_basestring(
-            self.render_string("message.html", message=chat))
+        logging.info("got html message %r", message)
 
-        ChatSocketHandler.update_cache(chat)
-        ChatSocketHandler.send_updates(chat)
+    @classmethod
+    def send_updates(cls, html_file):
+        logging.info("sending html to %d clients", len(cls.clients))
+        for clients in cls.clients:
+            try:
+                clients.write_message(html_file.read())
+            except:
+                logging.error("Error sending html", exc_info=True)
 
-if __name__ = '__main__':
+class DataHandler(tornado.websocket.WebSocketHandler):
+    clients = set()
+
+    def open(self):
+        DataHandler.clients.add(self)
+
+    def on_close(self):
+        DataHandler.clients.remove(self)
+
+    def on_message(self, message):
+        logging.info("got data message %r", message)
+
+    @classmethod
+    def send_updates(cls, data):
+        logging.info("sending data to %d clients", len(cls.clients))
+        for clients in cls.clients:
+            try:
+                clients.write_message(json.dumps(data))
+            except:
+                logging.error("Error sending data", exc_info=True)
+
+i = 0
+
+def cb():
+    sleep(2)
+    global i
+    HtmlHandler.send_updates(file('templates/X01.html'))
+    tornado.ioloop.IOLoop.current().add_callback(cb)
+    i += 1
+
+def main():
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
-
-    tornado.ioloop.IOLoop.current().add_callback(partial(callback))
-
+    tornado.ioloop.IOLoop.current().add_callback(cb)
     tornado.ioloop.IOLoop.current().start()
+
+
+if __name__ == "__main__":
+    main()
