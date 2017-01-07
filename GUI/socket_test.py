@@ -32,6 +32,7 @@ define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=True, help="run in debug mode")
 
 class Application(tornado.web.Application):
+    
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
@@ -94,22 +95,29 @@ class DataHandler(tornado.websocket.WebSocketHandler):
             except:
                 logging.error("Error sending data", exc_info=True)
 
-i = 0
+class CallbackContainer():
 
-def cb():
-    sleep(2)
-    global i
-    HtmlHandler.send_updates(file('templates/X01.html'))
-    tornado.ioloop.IOLoop.current().add_callback(cb)
-    i += 1
+    def __init__(self, callback, IOLoop):
+        self.i = 0
+        self.IOLoop = IOLoop
+        if (callable(callback)):
+            self.callback = callback
+            self.IOLoop.current().add_callback(self.call)
+        else:
+            raise TypeError("passed variable must be callable")
 
-def main():
+    def call(self):
+        self.callback()
+        self.IOLoop.current().add_callback(self.call)
+        self.i += 1
+
+def web_start(callback=None):
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
-    tornado.ioloop.IOLoop.current().add_callback(cb)
+    if (callback != None):
+        CallbackContainer(callback, tornado.ioloop.IOLoop)
     tornado.ioloop.IOLoop.current().start()
 
-
 if __name__ == "__main__":
-    main()
+    web_start()

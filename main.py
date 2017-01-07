@@ -24,10 +24,8 @@ from Manager import Manager
 from debug_tools import *
 from Web import *
 
-def callback():
-    iface.refresh(manager, partial(ChatSocketHandler.send_updates))
-    sleep(0.1)
-    tornado.ioloop.IOLoop.current().add_callback(partial(callback))
+def loop():
+    iface.refresh(manager, partial(update_clients))
 
 if __name__ == "__main__":
     try:
@@ -35,16 +33,10 @@ if __name__ == "__main__":
         iface = getattr(import_module("Boards." + Defaults.Interface_Type), "Interface")()
 
         if (Defaults.Web_Enable):
-            tornado.options.parse_command_line()
-            app = Application()
-            app.listen(options.port)
-
-            tornado.ioloop.IOLoop.current().add_callback(partial(callback))
-
-            tornado.ioloop.IOLoop.current().start()
+            web_start(loop)
         else:
             while True:
-                iface.refresh(manager, partial(ChatSocketHandler.send_updates))
+                loop()
                 sleep(0.1)
     except KeyboardInterrupt:
         iface.end()
