@@ -41,8 +41,8 @@ class Application(tornado.web.Application):
         ]
         settings = dict(
             cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
-            template_path=os.path.join(os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            template_path=os.path.join(os.path.dirname(__file__), "GUI/templates"),
+            static_path=os.path.join(os.path.dirname(__file__), "GUI/static"),
             xsrf_cookies=True,
             debug=options.debug,
         )
@@ -98,6 +98,7 @@ class DataHandler(tornado.websocket.WebSocketHandler):
 class CallbackContainer():
 
     def __init__(self, callback, IOLoop):
+        self.i = 0
         self.IOLoop = IOLoop
         if (callable(callback)):
             self.callback = callback
@@ -108,10 +109,10 @@ class CallbackContainer():
     def call(self):
         self.callback()
         self.IOLoop.current().add_callback(self.call)
+        self.i += 1
 
-def update_clients():
-    HTMLHandler.send_updates()
-    DataHandler.send_updates()
+def update_all(state):
+    HtmlHandler.send_updates(open("GUI/templates/X01.html"))
 
 def web_start(callback=None):
     tornado.options.parse_command_line()
@@ -122,4 +123,9 @@ def web_start(callback=None):
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    web_start()
+    def snd():
+        sleep(2)
+        fl = open("GUI/templates/X01.html")
+        HtmlHandler.send_updates(fl)
+        # DataHandler.send_updates()
+    web_start(snd)

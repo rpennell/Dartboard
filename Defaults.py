@@ -1,4 +1,4 @@
-Interface_Type = "ArachnidCMD"
+Interface_Type = "CMD"
 Debounce_Time = 0.1
 Sample_Period = 0.0001
 Web_Enable = True

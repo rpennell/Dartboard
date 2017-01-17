@@ -3,6 +3,7 @@
 Notes.txt
 backup/*
 test.py
+*.sh
 
 # Compiled source #
 ###################
