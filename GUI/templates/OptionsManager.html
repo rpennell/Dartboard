@@ -1,12 +1,21 @@
 <script>
    function update(data) {
-      var node = document.createElement("p");
-      var textnode = document.createTextNode("New");
-      node.appendChild(textnode);
-
-      var parent = document.getElementById("content");
-      parent.appendChild(node);
+      // data.Data.forEach(function(item, index) {
+      //    var node = document.createElement("p");
+      //    var textnode = document.createTextNode(JSON.stringify(data));
+      //    node.appendChild(textnode);
+      //
+      //    var parent = document.getElementById("content");
+      //    parent.appendChild(node);
+      // });
    }
+
+   function singleCol(message) {
+      document.getElementById("content").innerHTML.append("<div class='col-4'><p class='little'>" + message + "</p></div>");
+   }
+
+   singleCol("a");
+   singleCol("b");
 </script>
 
 <div id='title'>

@@ -35,8 +35,8 @@ var channels = {
             } else if (channels.html.requests == 0) {
                return;
             }
-            console.log({"Data": event})
-            update(event.data)
+            console.log({"Data": event});
+            update(JSON.parse(event.data));
          }
       },
 
