@@ -1,6 +1,7 @@
 import curses
 from functools import partial
 from json import dumps
+from Web import update_all
 
 from board_util import lookup, nada, COM
 
@@ -71,12 +72,12 @@ class Interface():
         (self.h, self.w) = self.screen.getmaxyx()
         self.screen.keypad(1)
 
-        self.start_line = 3
+        self.start_line = 5
         self.last_command = ""
         self.json = ""
 
 
-    def refresh(self, manager, send):
+    def refresh(self, manager):
         cmd = []
         cmd.append(self.reader.refresh())
 
@@ -90,26 +91,23 @@ class Interface():
                 command_given = True
 
         if (command_given or (self.json == "")):
-            self.update(manager, send)
+            update_all(manager.gui_data())
 
         # redraw screen
         self.screen.clear()
         to_display = manager.format_str(level = 0, indent = "  ").split("\n")
         for i in range(0, self.h - self.start_line):
             if (len(to_display) > i):
-                self.screen.addstr(i + self.start_line, 0, to_display[i][:self.w])
+                self.screen.addnstr(i + self.start_line, 0, to_display[i][:self.w], self.w)
             else:
                 break
-        self.screen.addstr(2, 0, "JSON: " + str(self.json))
-        self.screen.addstr(1, 0, "Last Command: " + self.last_command)
-        self.screen.addstr(0, 0, "Command: " + self.reader.current())
+        self.screen.addnstr(3, 0, "GUI: " + str(manager.gui_data()), self.w)
+        self.screen.addnstr(2, 0, "JSON: " + str(self.json), self.w)
+        self.screen.addnstr(1, 0, "Last Command: " + self.last_command, self.w)
+        self.screen.addnstr(0, 0, "Command: " + self.reader.current(), self.w)
         self.screen.refresh()
 
         return run
-
-    def update(self, manager, send):
-        self.json = dumps(manager.gui_data())
-        send(self.json)
 
     def end(self):
         curses.endwin()

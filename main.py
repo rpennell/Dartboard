@@ -25,7 +25,7 @@ from debug_tools import *
 from Web import *
 
 def loop():
-    iface.refresh(manager, update_all)
+    iface.refresh(manager)
 
 if __name__ == "__main__":
     try:
