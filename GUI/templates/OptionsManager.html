@@ -1,8 +1,19 @@
+<script>
+   function update(data) {
+      var node = document.createElement("p");
+      var textnode = document.createTextNode("New");
+      node.appendChild(textnode);
+
+      var parent = document.getElementById("content");
+      parent.appendChild(node);
+   }
+</script>
+
 <div id='title'>
    <p class="big">Options</p>
 </div>
 <div id='content'>
-   <div class="col-4">
+   <!-- <div class="col-4">
       <p class="little">One</p>
    </div>
    <div class="col-4">
@@ -10,5 +21,5 @@
    </div>
    <div class="col-4">
       <p class="little">Three</p>
-   </div>
+   </div> -->
 </div>
