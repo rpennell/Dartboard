@@ -28,8 +28,6 @@ from time import sleep
 
 from tornado.options import define, options
 
-from json import dumps
-
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=True, help="run in debug mode")
 
@@ -113,20 +111,8 @@ class CallbackContainer():
         self.IOLoop.current().add_callback(self.call)
         self.i += 1
 
-i = 0
-
-def update_all(data):
-    global i
-    data["index"] = i
-    if data["State"] == "Options":
-        HtmlHandler.send_updates(open("GUI/templates/OptionsManager.html"))
-    elif data["State"] == "Game":
-        HtmlHandler.send_updates(open("GUI/templates/X01.html"))
-    elif data["State"] == "Winner":
-        HtmlHandler.send_updates(open("GUI/templates/WinnerManager.html"))
-
-    DataHandler.send_updates(dumps(data))
-    i +=1 
+def update_all(state):
+    HtmlHandler.send_updates(open("GUI/templates/X01.html"))
 
 def web_start(callback=None):
     tornado.options.parse_command_line()

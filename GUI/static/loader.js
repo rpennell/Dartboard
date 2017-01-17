@@ -12,7 +12,7 @@ var channels = {
             } else if (channels.html.requests == 0) {
                return;
             }
-            console.log({"HTML": event});
+            console.log(event);
             $('#global').html(event.data);
          }
       },
@@ -35,8 +35,7 @@ var channels = {
             } else if (channels.html.requests == 0) {
                return;
             }
-            console.log({"Data": event})
-            update(event.data)
+            console.log(event)
          }
       },
 

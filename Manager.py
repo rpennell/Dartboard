@@ -32,7 +32,7 @@ class Manager():
 
     def gui_data(self):
         return {
-            "State": self.all_managers[self.state.index][0],
+            "State": self.state.index,
             "Data": self.manager.gui_data()
         }
 
