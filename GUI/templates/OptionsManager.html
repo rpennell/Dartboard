@@ -1,21 +1,47 @@
 <script>
    function update(data) {
-      // data.Data.forEach(function(item, index) {
-      //    var node = document.createElement("p");
-      //    var textnode = document.createTextNode(JSON.stringify(data));
-      //    node.appendChild(textnode);
-      //
-      //    var parent = document.getElementById("content");
-      //    parent.appendChild(node);
-      // });
+      display_matrix(data.Data);
    }
 
-   function singleCol(message) {
-      document.getElementById("content").innerHTML.append("<div class='col-4'><p class='little'>" + message + "</p></div>");
+   function display_matrix(data) {
+      // example data
+      // data = [["X01", "Battleship"], ["Players"], ["1", "2", "3", "4"]]
+
+      // erase all previous content
+      var content = document.getElementById('content');
+      content.innerHTML = "";
+
+      // make a column for each of the 3 lists in the 3xn string matrix
+      data.forEach(function(item) {
+         content.appendChild(column(item));
+      });
    }
 
-   singleCol("a");
-   singleCol("b");
+   function column(col) {
+      // make column
+      var elem = document.createElement('div');
+      elem.className = 'col-4';
+
+      if (Array.isArray(col)) {
+         // make list from col
+         col.forEach(function(item) {
+
+            // create needed elements
+            var p = document.createElement('p')
+            var text = document.createTextNode(item);
+
+            // change corresponding class names
+            p.className = 'little';
+
+            // append elements to one another to create structure
+            p.appendChild(text);
+            elem.appendChild(p);
+         });
+      }
+
+      return elem
+   }
+
 </script>
 
 <div id='title'>
@@ -24,11 +50,14 @@
 <div id='content'>
    <!-- <div class="col-4">
       <p class="little">One</p>
+      <p class="little">One</p>
    </div>
    <div class="col-4">
       <p class="little">Two</p>
+      <p class="little">Two</p>
    </div>
    <div class="col-4">
+      <p class="little">Three</p>
       <p class="little">Three</p>
    </div> -->
 </div>

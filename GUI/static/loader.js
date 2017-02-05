@@ -2,7 +2,7 @@ var channels = {
    html: {
       socket: null,
 
-      requests: 5,
+      requests: -1,
 
       start: function() {
          channels.html.socket = new WebSocket("ws://" + location.host + "/html");
