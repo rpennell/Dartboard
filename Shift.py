@@ -9,7 +9,6 @@ class Collector(dict):
 
 class ShiftReg595():
     def __init__(self, ser, oe, rclk, srclk, names=["a", "b", "c", "d", "e", "f", "g", "h"]):
-        self.t = 0.001
         self.pins = Collector(ser=ser, oe=oe, rclk=rclk, srclk=srclk)
         self.names = OrderedDict((i, 0) for i in names[::-1])
 
@@ -29,7 +28,7 @@ class ShiftReg595():
 
     def driver(self):
         GPIO.output(self.pins.rclk, 1)
-        sleep(self.t)
+        sleep(0.000000094)
         GPIO.output(self.pins.rclk, 0)
 
     def output_enable(self, en):
@@ -49,9 +48,9 @@ class ShiftReg595():
     def shift_in(self, inp):
         # shift a zero in
         GPIO.output(self.pins.ser, inp)
-        sleep(self.t)
+        sleep(0.000000125)
         GPIO.output(self.pins.srclk, 1)
-        sleep(self.t)
+        sleep(0.0000001)
         GPIO.output(self.pins.srclk, 0)
 
     def update(self):
@@ -60,15 +59,15 @@ class ShiftReg595():
 
         self.driver()
 
-lights = ShiftReg595(10, 8, 7, 11)
-# for i in range(8):
-#     lights.shift_in(1)
-#     lights.driver()
-#     sleep(1)
-
-lights["b"] = 1
-lights["c"] = 0
-lights["d"] = 1
-lights["e"] = 1
-sleep(1)
-lights["f"] = 1
+# lights = ShiftReg595(10, 8, 7, 11)
+# # for i in range(8):
+# #     lights.shift_in(1)
+# #     lights.driver()
+# #     sleep(1)
+#
+# lights["b"] = 1
+# lights["c"] = 0
+# lights["d"] = 0
+# lights["e"] = 1
+# sleep(1)
+# lights["f"] = 1
