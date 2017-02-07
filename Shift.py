@@ -19,12 +19,15 @@ class ShiftReg595():
         self.set_all(0)
         self.output_enable(1)
 
+    def __getitem__(self, key):
+        return self.name[key]
+
+    def __iter__(self):
+        return self.names.__iter__()
+
     def __setitem__(self, key, value):
         self.names[key] = value
         self.update()
-
-    def __getitem__(self, key):
-        return self.name[key]
 
     def driver(self):
         GPIO.output(self.pins.rclk, 1)
@@ -59,7 +62,13 @@ class ShiftReg595():
 
         self.driver()
 
-# lights = ShiftReg595(10, 8, 7, 11)
+lights = ShiftReg595(10, 8, 7, 11)
+for i in lights:
+    lights[i] = 1
+    sleep(1)
+for i in lights:
+    lights[i] = 0
+    sleep(1)
 # # for i in range(8):
 # #     lights.shift_in(1)
 # #     lights.driver()

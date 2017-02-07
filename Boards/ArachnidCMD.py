@@ -5,11 +5,72 @@ from functools import partial
 from threading import Timer,Thread,Event
 from json import dumps
 import RPi.GPIO as GPIO
-import time
+from collections import OrderedDict
+from time import sleep
 
 from board_util import lookup, nada, COM
 
 buff = []
+
+class Collector(dict):
+    def __init__(self, *args, **kwargs):
+        super(Collector, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+class ShiftReg595():
+    def __init__(self, ser, oe, rclk, srclk, names=["a", "b", "c", "d", "e", "f", "g", "h"]):
+        self.pins = Collector(ser=ser, oe=oe, rclk=rclk, srclk=srclk)
+        self.names = OrderedDict((i, 0) for i in names[::-1])
+
+        GPIO.setmode(GPIO.BCM)
+        for i in self.pins:
+            GPIO.setup(self.pins[i], GPIO.OUT)
+
+        self.set_all(0)
+        self.output_enable(1)
+
+    def __getitem__(self, key):
+        return self.name[key]
+
+    def __iter__(self):
+        return self.names.__iter__()
+
+    def __setitem__(self, key, value):
+        self.names[key] = value
+        self.update()
+
+    def driver(self):
+        GPIO.output(self.pins.rclk, 1)
+        sleep(0.000000094)
+        GPIO.output(self.pins.rclk, 0)
+
+    def output_enable(self, en):
+        GPIO.output(self.pins.oe, not en)
+
+    # sets value to be shifted but does not shift the value into the register
+    def place(self, key, value):
+        self.names[key] = value
+
+    def set_all(self, inp):
+        for i in self.names:
+            self.names[i] = inp
+            self.shift_in(self.names[i])
+
+        self.driver()
+
+    def shift_in(self, inp):
+        # shift a zero in
+        GPIO.output(self.pins.ser, inp)
+        sleep(0.000000125)
+        GPIO.output(self.pins.srclk, 1)
+        sleep(0.0000001)
+        GPIO.output(self.pins.srclk, 0)
+
+    def update(self):
+        for i in self.names:
+            self.shift_in(self.names[i])
+
+        self.driver()
 
 class perpetualTimer():
 
@@ -118,19 +179,16 @@ class Hardware():
             for j in range(len(self.SCORE[i])):
                 self.SCORE[i][j] = Edge(self.SCORE[i][j])
 
-        # Array of Rows
-        self.ROWS = [3, 5, 7, 11, 13, 15, 19, 21, 40]
-
         # Array of Columns
-        self.COLS = [23, 29, 31, 33, 18, 16, 35, 37]
+        self.COLS = [4, 17, 27, 22, 18, 23, 24, 25]
+
+        # Array of Rows
+        self.ROWS = [12, 16, 20, 21, 6, 13, 19, 26]
 
         # Array of Light GPIOS
-        # [enter, select, white, red, throw, remove]
-        self.LIGHTS = {"ent_light": 32, "sel_light": 26, "throw_light": 12, "remove_light": 10}
-        self.RED = 22
-        self.WHITE = 24
+        self.lights = ShiftReg595(10, 8, 7, 11, ["NC0", "White", "Red", "ent_light", "sel_light", "throw_light", "remove_light", "NC1"])
 
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
 
         for i in self.ROWS:
             GPIO.setup(i, GPIO.OUT)
@@ -138,48 +196,36 @@ class Hardware():
         for i in self.COLS:
             GPIO.setup(i, GPIO.IN)
 
-        for i in self.LIGHTS:
-            GPIO.setup(self.LIGHTS[i], GPIO.OUT)
-
-        for i in self.LIGHTS:
-            GPIO.output(self.LIGHTS[i], GPIO.LOW)
-
-
-        GPIO.setup(self.RED, GPIO.OUT)
-        GPIO.setup(self.WHITE, GPIO.OUT)
-
         self.board_lights()
 
     def board_lights(self):
-        GPIO.output(self.RED, GPIO.LOW)
-        GPIO.output(self.WHITE, GPIO.HIGH)
+        self.lights["White"] = 1
+        self.lights["Red"] = 0
 
     def light_switch(self, input):
         light = input.split()
-        if (light[0] in self.LIGHTS):
+        if (light[0] in self.lights):
             if light[1] == "0":
-                GPIO.output(self.LIGHTS[light[0]], GPIO.LOW)
-            else:
-                GPIO.output(self.LIGHTS[light[0]], GPIO.HIGH)
+                self.lights[light[0]] = 0
+            elif light[1] == "1":
+                self.lights[light[0]] = 1
 
     def refresh(self):
         global buff
-        # stuff = False
+        stuff = False
         for i in range(len(self.ROWS)):
             GPIO.output(self.ROWS[i], GPIO.HIGH)
             for j in range(len(self.COLS)):
                 temp =  self.SCORE[i][j].refresh(GPIO.input(self.COLS[j]))
                 if temp != None:
-                    time.sleep(Defaults.Debounce_Time)
+                    sleep(Defaults.Debounce_Time)
                     buff.append(temp)
             GPIO.output(self.ROWS[i], GPIO.LOW)
 
     def end(self):
-        for i in self.LIGHTS:
-            GPIO.output(self.LIGHTS[i], GPIO.LOW)
+        for i in self.lights:
+            self.lights[i] = 0
 
-        GPIO.output(self.RED, GPIO.LOW)
-        GPIO.output(self.WHITE, GPIO.LOW)
         GPIO.cleanup()
 
 class Interface():
@@ -224,7 +270,7 @@ class Interface():
                     self.board.light_switch("remove_light 1")
                     self.board.light_switch("enter_light 0")
                     self.update(manager, send)
-                    time.sleep(Defaults.Recovery_Time)
+                    sleep(Defaults.Recovery_Time)
                     # for i in ["ent_light 0", "sel_light 0", "remove_light 0", "throw_light 1"]:
                     #     self.board.light_switch(i)
                     buff = []
