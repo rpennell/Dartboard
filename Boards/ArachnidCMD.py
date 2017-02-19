@@ -2,11 +2,11 @@ import Defaults
 
 import curses
 from functools import partial
-from threading import Timer,Thread,Event
+from threading import Timer, Thread, Event
 from json import dumps
 import RPi.GPIO as GPIO
 from collections import OrderedDict
-from time import sleep
+from time import sleep, time
 
 from board_util import lookup, nada, COM
 
@@ -161,9 +161,59 @@ class Edge():
         else:
             self.last = val
 
-class Hardware():
+class SensorFilter():
+    def __init__(self, returnable, initial=0, samples=10):
+        self.ones = samples * initial
+        self.samples = samples
+        self.last = initial
+        self.returnable = returnable
+
+    def refresh(self, val):
+        if (self.edge(self.average(val)) == 1):
+            return self.returnable
+        return None
+
+    def average(self, val):
+        if ((val == 0) and (self.ones >= 0)):
+            self.ones -= 1
+        elif ((val == 1) and (self.ones < self.samples)):
+            self.ones += 1
+
+        if (self.ones > self.samples/2):
+            return 1
+        else:
+            return 0
+
+    def edge(self, val):
+        if ((val == 1) and (self.last == 0)):
+            self.last = val
+            return 1
+        self.last = val
+        return 0
+
+class Buttons():
+    def __init__(self, func):
+        self.pins = [2, 3, 14, 15]
+
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+
+        for i in self.pins:
+            GPIO.setup(i, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.add_event_detect(i, GPIO.RISING, callback=func, bouncetime=300)
+
+class MatrixReader():
     def __init__(self):
-        # Lookup table for score
+        # initialize GPIO
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+
+        # Array of Columns as Outputs
+        self.COLS = [4, 17, 27, 22, 18, 23, 24, 25]
+
+        # Array of Rows as Inputs
+        self.ROWS = [12, 16, 20, 21, 6, 13, 19, 26]
+
         self.SCORE = [
             ["9 1",    "7 0",    "7 2",  "pass",       "9 0",  "9 2",  "7 1",  "14 2"],
             ["13 1",   "17 0",   "17 2", "Bullseye 0", "13 0", "13 2", "17 1", "8 2" ],
@@ -173,28 +223,50 @@ class Hardware():
             [ "3 1",   "1 0",    "1 2",  "Bullseye 0", "3 0",  "3 2",  "1 1",  "15 2"],
             [ "2 1",   "4 0",    "4 2",  "6 1",        "2 0",  "2 2",  "4 1",  "6 0" ],
             ["16 1",   "19 0",   "19 2", "15 1",       "16 0", "16 2", "19 1", "15 0"],
-            ["enter",   "select", "pass",  "pass",       "pass", "pass", "pass", "pass"],
         ]
-        for i in range(len(self.SCORE)):
-            for j in range(len(self.SCORE[i])):
-                self.SCORE[i][j] = Edge(self.SCORE[i][j])
 
-        # Array of Columns
-        self.COLS = [4, 17, 27, 22, 18, 23, 24, 25]
+        # set GPIOs to input/ouput
+        for i in self.COLS:
+            GPIO.setup(i, GPIO.OUT)
+            GPIO.output(i, GPIO.LOW)
 
-        # Array of Rows
-        self.ROWS = [12, 16, 20, 21, 6, 13, 19, 26]
+        for i in self.ROWS:
+            GPIO.setup(i, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+        for i in range(len(self.COLS)):
+            for j in range(len(self.ROWS)):
+                self.SCORE[i][j] = SensorFilter(self.SCORE[i][j])
+
+        self.charge_time = 0.0000001
+        self.debounce_time = 0.1
+        self.last = time()
+
+    def refresh(self):
+        val = None
+        for i in range(len(self.COLS)):
+            GPIO.output(self.COLS[i], GPIO.HIGH)
+            sleep(self.charge_time)
+            for j in range(len(self.ROWS)):
+                x = self.SCORE[i][j].refresh(GPIO.input(self.ROWS[j]))
+                if x != None:
+                    if (time() - self.last >= self.debounce_time):
+                        self.last = time()
+                        val = x
+            GPIO.output(self.COLS[i], GPIO.LOW)
+            sleep(self.charge_time)
+
+        return val
+
+    def __exit__(self):
+        GPIO.cleanup()
+
+class Hardware():
+    def __init__(self):
+        self.matrixReader = MatrixReader()
+        self.buttons = Buttons(self.button_func)
 
         # Array of Light GPIOS
         self.lights = ShiftReg595(10, 8, 7, 11, ["NC0", "White", "Red", "ent_light", "sel_light", "throw_light", "remove_light", "NC1"])
-
-        GPIO.setmode(GPIO.BCM)
-
-        for i in self.ROWS:
-            GPIO.setup(i, GPIO.OUT)
-
-        for i in self.COLS:
-            GPIO.setup(i, GPIO.IN)
 
         self.board_lights()
 
@@ -210,17 +282,33 @@ class Hardware():
             elif light[1] == "1":
                 self.lights[light[0]] = 1
 
+    def button_func(self, chan):
+        global buff
+
+        if chan == 2:
+            buff.append("pass")
+        elif chan == 3:
+            buff.append("pass")
+        elif chan == 14:
+            buff.append("select")
+        elif chan == 15:
+            buff.append("enter")
+
     def refresh(self):
         global buff
-        stuff = False
-        for i in range(len(self.ROWS)):
-            GPIO.output(self.ROWS[i], GPIO.HIGH)
-            for j in range(len(self.COLS)):
-                temp =  self.SCORE[i][j].refresh(GPIO.input(self.COLS[j]))
-                if temp != None:
-                    sleep(Defaults.Debounce_Time)
-                    buff.append(temp)
-            GPIO.output(self.ROWS[i], GPIO.LOW)
+        x = self.matrixReader.refresh()
+        if x != None:
+            buff.append(x)
+        # global buff
+        # stuff = False
+        # for i in range(len(self.ROWS)):
+        #     GPIO.output(self.ROWS[i], GPIO.HIGH)
+        #     for j in range(len(self.COLS)):
+        #         temp =  self.SCORE[i][j].refresh(GPIO.input(self.COLS[j]))
+        #         if temp != None:
+        #             sleep(Defaults.Debounce_Time)
+        #             buff.append(temp)
+        #     GPIO.output(self.ROWS[i], GPIO.LOW)
 
     def end(self):
         for i in self.lights:

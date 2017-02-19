@@ -48,6 +48,10 @@ if __name__ == "__main__":
                 sleep(0.1)
     except KeyboardInterrupt:
         iface.end()
+    except Exception as inst:
+        iface.end()
+        print(type(inst))
+        print(inst.args)
     finally:
         iface.end()
 
