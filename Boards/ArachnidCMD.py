@@ -2,10 +2,8 @@ import Defaults
 
 import curses
 from functools import partial
-from threading import Timer, Thread, Event
 from json import dumps
 import RPi.GPIO as GPIO
-from collections import OrderedDict
 from time import sleep, time
 
 from Buttons import Buttons

@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 from collections import OrderedDict
-from time import sleep, time
+from time import sleep
 
 class Collector(dict):
     def __init__(self, *args, **kwargs):
@@ -12,6 +12,8 @@ class ShiftReg595():
         self.pins = Collector(ser=ser, oe=oe, rclk=rclk, srclk=srclk)
         self.names = OrderedDict((i, 0) for i in names[::-1])
 
+        # initialize GPIO
+        GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         for i in self.pins:
             GPIO.setup(self.pins[i], GPIO.OUT)
