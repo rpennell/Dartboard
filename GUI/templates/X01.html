@@ -20,27 +20,50 @@
    }
 </style>
 <script>
-function datum_pair(head, datum) {
+function update(data) {
+   var players = document.getElementById("players");
+   var meta = document.getElementById("meta");
+
+   meta.innerHTML = "";
+   meta.appendChild(datum_pair("Throw", data.Data.Throw + " / 3", 0));
+   meta.appendChild(datum_pair("Round", data.Data.Round, 1));
+
+   players.innerHTML = "";
+   for (i = 0; i < data.Data.Players.length; i++) {
+      players.appendChild(datum_pair(data.Data.Players[i], data.Data.Scores[i], i));
+   }
+
+}
+
+function datum_pair(head, datum, little) {
    // create row
    var row = document.createElement('div');
    row.className = "row";
 
    var head_div = document.createElement('div');
    var head_p = document.createElement('p');
-   var head_text = docuemnt.createTextNode(head);
+   var head_text = document.createTextNode(head);
 
    head_div.className = "col-6";
-   head_p.className = "big head"
+   if (little == 0) {
+      head_p.className = "big head"
+   } else {
+      head_p.className = "little head"
+   }
 
    head_p.appendChild(head_text);
    head_div.appendChild(head_p);
 
    var datum_div = document.createElement('div');
    var datum_p = document.createElement('p');
-   var datum_text = docuemnt.createTextNode(head);
+   var datum_text = document.createTextNode(datum);
 
-   datum_head.className = "col-6";
-   datum_p.className = "big datum"
+   datum_div.className = "col-6";
+   if (little == 0) {
+      datum_p.className = "big datum"
+   } else {
+      datum_p.className = "little datum"
+   }
 
    datum_p.appendChild(datum_text);
    datum_div.appendChild(datum_p);
@@ -56,7 +79,7 @@ function datum_pair(head, datum) {
 </div>
 <div id='content'>
    <div class="row">
-      <div class="col-6 border">
+      <div id="meta" class="col-6 border">
          <div class="row">
             <div class="col-6">
                <p class="big head">Throw</p>
@@ -82,7 +105,7 @@ function datum_pair(head, datum) {
             </div>
          </div>
       </div>
-      <div class="col-6 border">
+      <div id="players" class="col-6 border">
          <div class="row">
             <div class="col-6">
                <p class="big head">Player 1</p>
