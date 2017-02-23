@@ -1,18 +1,18 @@
 <script>
    function update(data) {
-      display_matrix(data.Data);
+      display_matrix(data.display);
    }
 
-   function display_matrix(data) {
+   function display_matrix(display) {
       // example data
-      // data = [["X01", "Battleship"], ["Players"], ["1", "2", "3", "4"]]
+      // data = [['X01', 'Battleship'], ['Players'], ['1', '2', '3', '4']]
 
       // erase all previous content
       var content = document.getElementById('content');
-      content.innerHTML = "";
+      content.innerHTML = '';
 
       // make a column for each of the 3 lists in the 3xn string matrix
-      data.forEach(function(item) {
+      display.forEach(function(item) {
          content.appendChild(column(item));
       });
    }
@@ -45,19 +45,19 @@
 </script>
 
 <div id='title'>
-   <p class="big">Options</p>
+   <p class='big'>Options</p>
 </div>
 <div id='content'>
-   <!-- <div class="col-4">
-      <p class="little">One</p>
-      <p class="little">One</p>
+   <!-- <div class='col-4'>
+      <p class='little'>One</p>
+      <p class='little'>One</p>
    </div>
-   <div class="col-4">
-      <p class="little">Two</p>
-      <p class="little">Two</p>
+   <div class='col-4'>
+      <p class='little'>Two</p>
+      <p class='little'>Two</p>
    </div>
-   <div class="col-4">
-      <p class="little">Three</p>
-      <p class="little">Three</p>
+   <div class='col-4'>
+      <p class='little'>Three</p>
+      <p class='little'>Three</p>
    </div> -->
 </div>

@@ -46,7 +46,6 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
-            (r"/html", HtmlHandler),
             (r"/data", DataHandler),
         ]
         settings = dict(
@@ -63,31 +62,9 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")
 
-class HtmlHandler(tornado.websocket.WebSocketHandler):
-    clients = set()
-
-    def open(self):
-        HtmlHandler.clients.add(self)
-
-    def on_close(self):
-        HtmlHandler.clients.remove(self)
-
-    def on_message(self, message):
-        # logging.info("got html message %r", message)
-        pass
-
-    @classmethod
-    def send_updates(cls, html_file):
-        # logging.info("sending html to %d clients", len(cls.clients))
-        for clients in cls.clients:
-            try:
-                clients.write_message(html_file.read())
-            except:
-                # logging.error("Error sending html", exc_info=True)
-                pass
-
 class DataHandler(tornado.websocket.WebSocketHandler):
     clients = set()
+    index = 0
 
     def open(self):
         DataHandler.clients.add(self)
@@ -96,23 +73,33 @@ class DataHandler(tornado.websocket.WebSocketHandler):
         DataHandler.clients.remove(self)
 
     def on_message(self, message):
-        # logging.info("got data message %r", message)
+        # logging.info("got html message %r", message)
         pass
 
     @classmethod
-    def send_updates(cls, data):
-        # logging.info("sending data to %d clients", len(cls.clients))
+    def send_updates(cls, state, data, html):
+        # index, state, html, data
+        to_send = {
+            "index": cls.index,
+            "state": state,
+            "display": data,
+            "html": html.read(),
+        }
+        to_send = dumps(to_send)
+
+
+        # logging.info("sending html to %d clients", len(cls.clients))
         for clients in cls.clients:
             try:
-                clients.write_message(dumps(data))
+                clients.write_message(to_send)
             except:
-                # logging.error("Error sending data", exc_info=True)
+                # logging.error("Error sending html", exc_info=True)
                 pass
+        cls.index += 1
 
 class CallbackContainer():
 
     def __init__(self, callback, IOLoop):
-        self.i = 0
         self.IOLoop = IOLoop
         if (callable(callback)):
             self.callback = callback
@@ -123,22 +110,16 @@ class CallbackContainer():
     def call(self):
         self.callback()
         self.IOLoop.current().add_callback(self.call)
-        self.i += 1
-
-i = 0
 
 def update_all(data):
-    global i
-    data["index"] = i
     if data["State"] == "Options":
-        HtmlHandler.send_updates(open("GUI/templates/OptionsManager.html"))
+        fl = open("GUI/templates/OptionsManager.html")
     elif data["State"] == "Game":
-        HtmlHandler.send_updates(open("GUI/templates/X01.html"))
+        fl = open("GUI/templates/X01.html")
     elif data["State"] == "Winner":
-        HtmlHandler.send_updates(open("GUI/templates/WinnerManager.html"))
+        fl = open("GUI/templates/WinnerManager.html")
 
-    DataHandler.send_updates(data)
-    i +=1
+    DataHandler.send_updates(data["State"], data["Data"], fl)
 
 def web_start(callback=None):
     tornado.options.parse_command_line()
@@ -149,9 +130,9 @@ def web_start(callback=None):
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    def snd():
-        sleep(2)
-        fl = open("GUI/templates/X01.html")
-        HtmlHandler.send_updates(fl)
+    # def snd():
+        # sleep(2)
+        # fl = open("GUI/templates/X01.html")
+        # HtmlHandler.send_updates(fl)
         # DataHandler.send_updates()
     web_start(snd)

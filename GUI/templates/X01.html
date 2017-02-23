@@ -21,34 +21,37 @@
 </style>
 <script>
 function update(data) {
-   var players = document.getElementById("players");
-   var meta = document.getElementById("meta");
+   build(data.display);
+}
 
-   meta.innerHTML = "";
-   meta.appendChild(datum_pair("Throw", data.Data.Throw + " / 3", 0));
-   meta.appendChild(datum_pair("Round", data.Data.Round, 1));
+function build(display) {
+   var players = document.getElementById('players');
+   var meta = document.getElementById('meta');
 
-   players.innerHTML = "";
-   for (i = 0; i < data.Data.Players.length; i++) {
-      players.appendChild(datum_pair(data.Data.Players[i], data.Data.Scores[i], i));
+   meta.innerHTML = '';
+   meta.appendChild(datum_pair('Throw', display.Throw + ' / 3', 0));
+   meta.appendChild(datum_pair('Round', display.Round, 1));
+
+   players.innerHTML = '';
+   for (i = 0; i < display.Players.length; i++) {
+      players.appendChild(datum_pair(display.Players[i], display.Scores[i], i));
    }
-
 }
 
 function datum_pair(head, datum, little) {
    // create row
    var row = document.createElement('div');
-   row.className = "row";
+   row.className = 'row';
 
    var head_div = document.createElement('div');
    var head_p = document.createElement('p');
    var head_text = document.createTextNode(head);
 
-   head_div.className = "col-6";
+   head_div.className = 'col-6';
    if (little == 0) {
-      head_p.className = "big head"
+      head_p.className = 'big head'
    } else {
-      head_p.className = "little head"
+      head_p.className = 'little head'
    }
 
    head_p.appendChild(head_text);
@@ -58,11 +61,11 @@ function datum_pair(head, datum, little) {
    var datum_p = document.createElement('p');
    var datum_text = document.createTextNode(datum);
 
-   datum_div.className = "col-6";
+   datum_div.className = 'col-6';
    if (little == 0) {
-      datum_p.className = "big datum"
+      datum_p.className = 'big datum'
    } else {
-      datum_p.className = "little datum"
+      datum_p.className = 'little datum'
    }
 
    datum_p.appendChild(datum_text);
@@ -75,83 +78,83 @@ function datum_pair(head, datum, little) {
 }
 </script>
 <div id='title'>
-   <p class="big">X01</p>
+   <p class='big'>X01</p>
 </div>
 <div id='content'>
-   <div class="row">
-      <div id="meta" class="col-6 border">
-         <div class="row">
-            <div class="col-6">
-               <p class="big head">Throw</p>
+   <div class='row'>
+      <div id='meta' class='col-6 border'>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='big head'>Throw</p>
             </div>
-            <div class="col-6">
-               <p class="big datum">2/3</p>
-            </div>
-         </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Round </p>
-            </div>
-            <div class="col-6">
-               <p class="little datum">1</p>
+            <div class='col-6'>
+               <p class='big datum'>2/3</p>
             </div>
          </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Round </p>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Round </p>
             </div>
-            <div class="col-6">
-               <p class="little datum">1</p>
+            <div class='col-6'>
+               <p class='little datum'>1</p>
+            </div>
+         </div>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Round </p>
+            </div>
+            <div class='col-6'>
+               <p class='little datum'>1</p>
             </div>
          </div>
       </div>
-      <div id="players" class="col-6 border">
-         <div class="row">
-            <div class="col-6">
-               <p class="big head">Player 1</p>
+      <div id='players' class='col-6 border'>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='big head'>Player 1</p>
             </div>
-            <div class="col-6">
-               <p class="big datum">Score 1</p>
-            </div>
-         </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Player 1</p>
-            </div>
-            <div class="col-6">
-               <p class="little datum">Score 1</p>
+            <div class='col-6'>
+               <p class='big datum'>Score 1</p>
             </div>
          </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Player 1</p>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Player 1</p>
             </div>
-            <div class="col-6">
-               <p class="little datum">Score 1</p>
-            </div>
-         </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Player 1</p>
-            </div>
-            <div class="col-6">
-               <p class="little datum">Score 1</p>
+            <div class='col-6'>
+               <p class='little datum'>Score 1</p>
             </div>
          </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Player 1</p>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Player 1</p>
             </div>
-            <div class="col-6">
-               <p class="little datum">Score 1</p>
+            <div class='col-6'>
+               <p class='little datum'>Score 1</p>
             </div>
          </div>
-         <div class="row">
-            <div class="col-6">
-               <p class="little head">Player 1</p>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Player 1</p>
             </div>
-            <div class="col-6">
-               <p class="little datum">Score 1</p>
+            <div class='col-6'>
+               <p class='little datum'>Score 1</p>
+            </div>
+         </div>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Player 1</p>
+            </div>
+            <div class='col-6'>
+               <p class='little datum'>Score 1</p>
+            </div>
+         </div>
+         <div class='row'>
+            <div class='col-6'>
+               <p class='little head'>Player 1</p>
+            </div>
+            <div class='col-6'>
+               <p class='little datum'>Score 1</p>
             </div>
          </div>
       </div>

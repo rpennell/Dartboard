@@ -1,47 +1,45 @@
-var channels = {
-   html: {
-      socket: null,
+var link = {
+   // WebSocket object
+   socket: null,
 
-      requests: -1,
+   // max number of requests the link will take.  negative numbers are interpreted as infinity.
+   request: -1,
 
-      start: function() {
-         channels.html.socket = new WebSocket("ws://" + location.host + "/html");
-         channels.html.socket.onmessage = function(event) {
-            if (channels.html.requests > 0) {
-               channels.html.requests--;
-            } else if (channels.html.requests == 0) {
-               return;
-            }
-            console.log({"HTML": event});
-            $('#global').html(event.data);
+   // start socket
+   start: function() {
+      var self = link;
+      self.socket = new WebSocket('ws://' + location.host + '/data');
+      self.socket.onmessage = function(event) {
+         // if we have exceeded our max requests, do nothing
+         if (self.requests > 0) {
+            self.requests--;
+         } else if (self.requests == 0) {
+            return;
          }
-      },
 
-      end: function() {
-         channels.html.socket.close()
+         // parse the request and log it
+         var data = JSON.parse(event.data);
+         console.log(data);
+
+         // update html
+         // if !(data.html === '') {
+         var global = document.getElementById('global')
+         global.innerHTML = data.html;
+         // }
+
+         // execute code if present
+         var codes = global.getElementsByTagName('script');
+         for (var i=0; i<codes.length; i++) {
+            eval(codes[i].text);
+         }
+
+         // update dispayable data
+         update(data);
       }
    },
 
-   data: {
-      socket: null,
-
-      request: -1,
-
-      start: function() {
-         channels.data.socket = new WebSocket("ws://" + location.host + "/data");
-         channels.data.socket.onmessage = function(event) {
-            if (channels.html.requests > 0) {
-               channels.html.requests--;
-            } else if (channels.html.requests == 0) {
-               return;
-            }
-            console.log({"Data": event});
-            update(JSON.parse(event.data));
-         }
-      },
-
-      end: function() {
-         channels.data.socket.close()
-      }
+   // close socket
+   end: function() {
+      link.socket.close()
    }
 };
