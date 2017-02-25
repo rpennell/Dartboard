@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-#
-# Copyright 2009 Facebook
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
 import Defaults
 
 from time import sleep
@@ -24,10 +9,8 @@ from Manager import Manager
 from debug_tools import *
 from Web import *
 
-def callback():
-    iface.refresh(manager, partial(ChatSocketHandler.send_updates))
-    sleep(0.1)
-    tornado.ioloop.IOLoop.current().add_callback(partial(callback))
+def loop():
+    iface.refresh(manager, update_all)
 
 if __name__ == "__main__":
     try:
@@ -35,23 +18,13 @@ if __name__ == "__main__":
         iface = getattr(import_module("Boards." + Defaults.Interface_Type), "Interface")()
 
         if (Defaults.Web_Enable):
-            tornado.options.parse_command_line()
-            app = Application()
-            app.listen(options.port)
-
-            tornado.ioloop.IOLoop.current().add_callback(partial(callback))
-
-            tornado.ioloop.IOLoop.current().start()
+            web_start(loop)
         else:
             while True:
-                iface.refresh(manager, partial(ChatSocketHandler.send_updates))
+                loop()
                 sleep(0.1)
     except KeyboardInterrupt:
         iface.end()
-    except Exception as inst:
-        iface.end()
-        print(type(inst))
-        print(inst.args)
     finally:
         iface.end()
 
