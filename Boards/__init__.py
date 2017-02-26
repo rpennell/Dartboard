@@ -1,1 +1,1 @@
-__all__ = ['Decoder']
+__all__ = ['Arachnid', 'CMD', 'board_util']

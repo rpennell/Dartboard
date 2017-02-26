@@ -5,6 +5,7 @@ from sys import exit
 from importlib import import_module
 from functools import partial
 
+from Boards.SumInterface import SumInterface
 from Manager import Manager
 from debug_tools import *
 from Web import *
@@ -13,9 +14,10 @@ def loop():
     iface.refresh(manager, update_all)
 
 if __name__ == "__main__":
+    manager = Manager()
+    iface = SumInterface()
     try:
-        manager = Manager()
-        iface = getattr(import_module("Boards." + Defaults.Interface_Type), "Interface")()
+
 
         if (Defaults.Web_Enable):
             web_start(loop)

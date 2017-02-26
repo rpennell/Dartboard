@@ -7,7 +7,6 @@ from WinnerManager import WinnerManager
 from Games.game_util import SetIterator
 
 class Manager():
-
     def __init__(self):
         self.all_managers = (
             ("Options", OptionsManager),
@@ -16,7 +15,7 @@ class Manager():
         )
         self.state = SetIterator(0, len(self.all_managers))
         self.manager = self.all_managers[self.state.index][1]()
-        self.decoder = getattr(import_module("Boards." + Defaults.Interface_Type), "Decoder")(self.all_managers[self.state.index][0], self.manager.allowed_functions())
+        self.decoder = getattr(import_module("Boards." + Defaults.Interface_Type + ".Decoder"), "Decoder")(self.all_managers[self.state.index][0], self.manager.allowed_functions())
 
     def interface_data(self):
         return self.manager.interface_data()
@@ -28,7 +27,7 @@ class Manager():
         if (val_to_pass != None):
             self.state.next()
             self.manager = self.all_managers[self.state.index][1](val_to_pass)
-            self.decoder = getattr(import_module("Boards." + Defaults.Interface_Type), "Decoder")(self.all_managers[self.state.index][0], self.manager.allowed_functions())
+            self.decoder = getattr(import_module("Boards." + Defaults.Interface_Type + ".Decoder"), "Decoder")(self.all_managers[self.state.index][0], self.manager.allowed_functions())
 
     def gui_data(self):
         return {
