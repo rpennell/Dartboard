@@ -13,14 +13,20 @@ from Web import *
 def loop():
     q = iface.refresh()
 
+    cmd_given = False
     while(not q.empty()):
-        print (q)
-        manager.action(q.get())
+        cmd_given = True
+        cmd = q.get()
+        print (cmd)
+        manager.action(cmd)
+
+    if cmd_given == True:
+        update_all(manager.interface_data()["State"])
 
 if __name__ == "__main__":
     manager = Manager()
     # TODO: make so defaults is passed to SumInterface
-    iface = SumInterface()
+    iface = SumInterface(manager.format_str)
     iface.refresh()
 
     try:

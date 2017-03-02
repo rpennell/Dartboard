@@ -5,8 +5,9 @@ from Reader import Reader
 from Web import update_all
 
 class Interface():
-    def __init__(self, q):
+    def __init__(self, q, debug_info):
         self.q = q
+        self.debug_info = debug_info
         curses.cbreak
         self.screen = curses.initscr()
         self.reader = Reader(self.screen)
@@ -18,23 +19,12 @@ class Interface():
         self.json = ""
 
 
-    def refresh(self, manager, send):
-        q.append(self.reader.refresh())
-
-        # go through list of commands
-        command_given = False
-        for i in cmd:
-            if (i != ""):
-                self.last_command = i
-                manager.action(i)
-                command_given = True
-
-        if (command_given):
-            update_all(manager.gui_data())
+    def refresh(self):
+        self.q.put(self.reader.refresh())
 
         # redraw screen
         self.screen.clear()
-        to_display = manager.format_str(level = 0, indent = "  ").split("\n")
+        to_display = self.debug_info(level = 0, indent = "  ").split("\n")
         for i in range(0, self.h - self.start_line):
             if (len(to_display) > i):
                 self.screen.addnstr(i + self.start_line, 0, to_display[i][:self.w], self.w)

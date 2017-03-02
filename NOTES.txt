@@ -1,0 +1,14 @@
+Events
+   state change
+      Options:
+         up
+         down
+         left
+         right
+      Game:
+         throw
+         throw_not_valid
+         next_player
+         next_round
+      Winner:
+         none, only next_state matters
