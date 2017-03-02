@@ -1,16 +1,27 @@
 # this class is the top level interface before the manager functions are called
 from multiprocessing import Queue
 
-from Boards.CMD import Interface, Decoder
+from Boards.CMD.Interface import Interface as CMD
+from Boards.Test.Interface import Interface as Test
+
+# , Test.Interface
+
 
 class SumInterface():
     def __init__(self):
-        self.bufs = [
-            ("CMD", Queue(), Decoder)
-        ]
+        self.q = Queue()
+        self.use = [Test]
         self.iface = []
-        for i in self.bufs:
-            self.iface.append(Interface(i[1]))
+        for i in self.use:
+            self.iface.append(i(self.q))
 
-    def refresh(self, functions):
-        for i in self.bufs:
+    def refresh(self):
+        for i in self.iface:
+            i.refresh()
+
+        # everything already in q
+        return self.q
+
+    def end(self):
+        for i in self.iface:
+            i.end()

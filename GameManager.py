@@ -51,14 +51,16 @@ class GameManager():
     # @return: true or false if throw is valid
     def throw_dart(self, button, mult):
         # TODO: add exit case exception
-        if (button == "Bullseye" and (int(mult) == 0 or int(mult) == 1)):
+        button = str(button)
+        mult = int(mult)
+        if (button == "Bullseye" and (mult == 0 or mult == 1)):
             # for bullseye case
             pass
         elif (not (int(button) <= 20 and int(button) >= 1)):
             raise Exception("passed button value " + str(button) + "is not valid")
-        elif (not (int(mult) <= 2 and int(mult) >= 0)):
+        elif (not (mult <= 2 and mult >= 0)):
             raise Exception("passed mult value " + str(mult) + "is not valid")
-        self.game.throw_dart(str(button), mult)
+        self.game.throw_dart(button, mult)
 
     def allowed_functions(self):
         return Subset(

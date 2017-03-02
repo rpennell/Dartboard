@@ -1,1 +1,1 @@
-__all__ = ['Decoder', 'CMD', 'Reader']
+__all__ = ['Interface', 'Reader']

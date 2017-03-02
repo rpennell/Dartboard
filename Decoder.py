@@ -1,6 +1,6 @@
 from functools import partial
 
-from board_util import lookup, nada
+from Boards.board_util import lookup, nada
 
 class Decoder():
 

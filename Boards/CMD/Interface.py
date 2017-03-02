@@ -5,7 +5,8 @@ from Reader import Reader
 from Web import update_all
 
 class Interface():
-    def __init__(self):
+    def __init__(self, q):
+        self.q = q
         curses.cbreak
         self.screen = curses.initscr()
         self.reader = Reader(self.screen)
@@ -18,8 +19,7 @@ class Interface():
 
 
     def refresh(self, manager, send):
-        cmd = []
-        cmd.append(self.reader.refresh())
+        q.append(self.reader.refresh())
 
         # go through list of commands
         command_given = False

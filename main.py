@@ -11,20 +11,26 @@ from debug_tools import *
 from Web import *
 
 def loop():
-    iface.refresh(manager, update_all)
+    q = iface.refresh()
+
+    while(not q.empty()):
+        print (q)
+        manager.action(q.get())
 
 if __name__ == "__main__":
     manager = Manager()
+    # TODO: make so defaults is passed to SumInterface
     iface = SumInterface()
+    iface.refresh()
+
     try:
-
-
         if (Defaults.Web_Enable):
             web_start(loop)
         else:
             while True:
                 loop()
-                sleep(0.1)
+                # TODO: take out.  for testing only
+                sleep(0.01)
     except KeyboardInterrupt:
         iface.end()
     finally:
