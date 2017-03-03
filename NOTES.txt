@@ -12,3 +12,35 @@ Events
          next_round
       Winner:
          none, only next_state matters
+
+Events:
+   // Called: on state change
+   // Return: current state
+   state
+
+   // Called: on up
+   up
+
+   // Called: on down
+   down
+
+   // Called: on left
+   left
+
+   // Called: on right
+   right
+
+   // Called: on throw
+   // Return: throw number
+   throw
+
+   // Called: when throw number > allowed throws or internal game reasons (bust)
+   invalid_throw
+
+   // Called: on a player change
+   // Return: current player name
+   player
+
+   // Called: on a round change
+   // Return: current round number
+   round

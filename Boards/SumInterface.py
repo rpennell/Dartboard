@@ -8,17 +8,21 @@ from Boards.Test.Interface import Interface as Test
 
 
 class SumInterface():
-    def __init__(self, get_state):
+    def __init__(self, register_event, debug_info):
+        # queue for commands
         self.q = Queue()
+        # interfaces
         self.use = [Test]
+        # debugging interfaces
         self.debug = [CMD]
+        # where declared interfces go
         self.iface = []
 
         # left uncombined for overhead
         for i in self.use:
-            self.iface.append(i(self.q))
+            self.iface.append(i(self.q, register_event))
         for i in self.debug:
-            self.iface.append(i(self.q, get_state))
+            self.iface.append(i(self.q, register_event, debug_info))
 
     def refresh(self):
         # refresh all interfaces
@@ -28,6 +32,14 @@ class SumInterface():
         # everything already in q
         return self.q
 
-    def end(self):
+    # called when entering
+    def __enter__(self):
         for i in self.iface:
-            i.end()
+            if (hasattr(i, '__enter__'))
+                i.__enter__()
+
+    # called when exiting
+    def __exit__(self):
+        for i in self.iface:
+            if (hasattr(i, '__exit__'))
+                i.__exit__()

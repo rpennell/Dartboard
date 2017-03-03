@@ -1,7 +1,7 @@
 from time import time
 
 class Interface():
-    def __init__(self, q):
+    def __init__(self, q, register_event):
         self.q = q
         self.last = time()
 
@@ -9,6 +9,3 @@ class Interface():
         if (time() - self.last >= 1):
             self.q.put('pass')
             self.last = time()
-
-    def end(self):
-        pass

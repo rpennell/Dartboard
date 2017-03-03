@@ -8,9 +8,7 @@ class GameManager():
 
     # intialize the game with the specified number of players
     def __init__(self, game_name):
-        package = "Games"
-
-        self.settings = getattr(import_module(package + "." + game_name), "options").collapse()
+        self.settings = getattr(import_module("Games." + game_name), "options").collapse()
 
         self.players = PlayerManager(
             self.settings["Players"]
@@ -39,6 +37,7 @@ class GameManager():
         self.rnd += 1
         if (hasattr(self.game, 'on_round_change')):
             self.game.on_round_change(self.rnd)
+        self.raise_event('round', self.rnd)
 
     def gui_data(self):
         temp = self.game.gui_data()

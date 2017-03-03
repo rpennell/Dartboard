@@ -6,7 +6,8 @@ from Options import *
 from debug_tools import *
 
 class OptionsManager():
-    def __init__(self, looped = False):
+    def __init__(self, raise_event, looped = False):
+        self.raise_event = raise_event
         self.column = 0
         self.exit = None
         self.control_list = [
@@ -48,9 +49,11 @@ class OptionsManager():
 
     def shiftup(self):
         self.get_column().rotate(-1)
+        self.raise_event('up')
 
     def shiftdown(self):
         self.get_column().rotate(1)
+        self.raise_event('down')
 
     def nextcol(self):
         nxt = self.get_column(1)
@@ -58,10 +61,12 @@ class OptionsManager():
             nxt()
         elif (not nxt == self.prevcol):
             self.column = (self.column + 1) % self.get_depth()
+        self.raise_event('right')
 
     def prevcol(self):
         nxt = self.get_column(self.get_depth() - 1)
         self.column = (self.column - 1) % self.get_depth()
+        self.raise_event('left')
 
     def get_depth(self):
         count = 0

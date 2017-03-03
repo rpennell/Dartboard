@@ -16,17 +16,16 @@ def loop():
     cmd_given = False
     while(not q.empty()):
         cmd_given = True
-        cmd = q.get()
-        print (cmd)
-        manager.action(cmd)
+        manager.action(q.get())
 
     if cmd_given == True:
-        update_all(manager.interface_data()["State"])
+        pass
+        # update_all(manager.interface_data()["State"])
 
 if __name__ == "__main__":
     manager = Manager()
     # TODO: make so defaults is passed to SumInterface
-    iface = SumInterface(manager.format_str)
+    iface = SumInterface(manager.events.register_event, manager.format_str)
     iface.refresh()
 
     try:
