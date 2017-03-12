@@ -2,12 +2,12 @@ from importlib import import_module
 
 from PlayerManager import PlayerManager
 from Subset import Subset
-from Games.game_util import SetIterator
 
 class GameManager():
 
     # intialize the game with the specified number of players
-    def __init__(self, game_name):
+    def __init__(self, raise_event, game_name):
+        self.raise_event = raise_event
         self.settings = getattr(import_module("Games." + game_name), "options").collapse()
 
         self.players = PlayerManager(
@@ -24,14 +24,8 @@ class GameManager():
             self.players.to_dict,
         )
         self.settings.pop("Players")
-        self.game = getattr(import_module(package + "." + game_name), game_name)(functions, **self.settings)
+        self.game = getattr(import_module("Games." + game_name), game_name)(functions, **self.settings)
         self.rnd = 0
-
-    def interface_data(self):
-        if self.game.throw >= 3:
-            return ["ent_light 1", "sel_light 0", "remove_light 0", "throw_light 0"]
-        else:
-            return ["ent_light 0", "sel_light 0", "remove_light 0", "throw_light 1"]
 
     def next_rnd(self):
         self.rnd += 1

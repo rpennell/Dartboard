@@ -8,7 +8,6 @@ from WinnerManager import WinnerManager
 from Games.game_util import SetIterator
 
 class Manager():
-
     def __init__(self):
         self.all_managers = (
             ("Options", OptionsManager),
@@ -20,16 +19,13 @@ class Manager():
         self.manager = self.all_managers[self.state.index][1](self.events.raise_event)
         self.decoder = Decoder(self.all_managers[self.state.index][0], self.manager.allowed_functions())
 
-    def interface_data(self):
-        return self.manager.interface_data()
-
     def action(self, command):
         self.decoder.action(command)
 
         val_to_pass = self.manager.exit_case()
         if (val_to_pass != None):
             self.state.next()
-            self.manager = self.all_managers[self.state.index][1](val_to_pass)
+            self.manager = self.all_managers[self.state.index][1](self.events.raise_event, val_to_pass)
             self.decoder = Decoder(self.all_managers[self.state.index][0], self.manager.allowed_functions())
             self.events.raise_event('state', self.all_managers[self.state.index][0])
 

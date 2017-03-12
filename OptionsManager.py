@@ -22,9 +22,6 @@ class OptionsManager():
 
         self._verify_options(self.options)
 
-    def interface_data(self):
-        return ["sel_light 1", "ent_light 1", "throw_light 0", "remove_light 0"]
-
     def gui_data(self):
         temp = []
         try:
