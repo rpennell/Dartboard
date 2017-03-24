@@ -1,6 +1,7 @@
 import curses
+
+from Defaults import KEYBOARD_TIMEOUT_MS
 from Util import FaultThread
-from multiprocessing import Event
 
 class Reader(FaultThread):
     def __init__(self, q, screen, current):
@@ -8,10 +9,9 @@ class Reader(FaultThread):
         # curses screen
         self.screen = screen
         # leave timeout for input and don't echo to screen
-        self.screen.timeout(10)
+        self.screen.timeout(KEYBOARD_TIMEOUT_MS)
         curses.noecho()
-        # exit event called when ready to exit
-        self.exit = Event()
+        
         # queue to put commands in
         self.q = q
 
@@ -19,7 +19,6 @@ class Reader(FaultThread):
         self.cmd = ""
 
         super(Reader, self).__init__()
-        self.start()
 
     # overwritten execute of FaultThread
     def execute(self):
@@ -42,10 +41,3 @@ class Reader(FaultThread):
             self.cmd += chr(inp)
 
         self.current(self.cmd)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, e_type, e_value, e_traceback):
-        self.exit.set()
-        self.join()

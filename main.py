@@ -9,6 +9,7 @@ from Boards.SumInterface import SumInterface
 from Manager import Manager
 from debug_tools import *
 from Web import *
+from Util import FaultThread
 
 def loop():
     q = iface.get_commands()
@@ -16,10 +17,11 @@ def loop():
     cmd_given = False
     while(not q.empty()):
         cmd_given = True
-        manager.action(q.get())
+        if (FaultThread.ok()):
+            manager.action(q.get())
 
-    if cmd_given == True:
-        update_all(manager.gui_data()["State"])
+    # if cmd_given == True:
+    #     update_all(manager.gui_data()["State"])
 
 if __name__ == "__main__":
     manager = Manager()

@@ -1,11 +1,36 @@
 import RPi.GPIO as GPIO
-from collections import OrderedDict
-from time import sleep
+from multithreading import Queue
 
-class Collector(dict):
-    def __init__(self, *args, **kwargs):
-        super(Collector, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+from Util import ShiftReg595, Collector, FaultThread
+
+class Lights(FaultThread):
+    def __init__(self, register_event):
+        # exit event called when ready to exit
+        self.exit = Event()
+        # queue to put commands in
+        self.cmd = Queue()
+
+        # shift reg that goes to lights hardware
+        self.shiftreg = ShiftReg595(10, 8, 7, 11, ["NC0", "White", "Red", "Enter", "Select", "Throw", "Remove", "NC1"])
+
+        # call super and start thread
+        super(Interface, self).__init__()
+        self.start()
+
+    def execute(self):
+        # if we aren't exiting, keep running
+        while not self.exit.is_set():
+            sleep(THREAD_WAIT_TIME)
+
+    def put(self, name, val, time=0):
+        self.cmd.put
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, e_type, e_value, e_traceback):
+        self.exit.set()
+        self.join()
 
 class ShiftReg595():
     def __init__(self, ser, oe, rclk, srclk, names=["a", "b", "c", "d", "e", "f", "g", "h"]):

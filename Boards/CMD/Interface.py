@@ -1,14 +1,12 @@
 import curses
-from multiprocessing import Event
 from time import sleep
 
+from Defaults import THREAD_WAIT_TIME
 from Util import FaultThread, probe
 from Reader import Reader
 
 class Interface(FaultThread):
     def __init__(self, q, register_event, debug_info):
-        # exit event called when ready to exit
-        self.exit = Event()
         # queue to put commands in
         self.q = q
 
@@ -18,7 +16,6 @@ class Interface(FaultThread):
 
         # call super and start thread
         super(Interface, self).__init__()
-        self.start()
 
     # overwritten execute of FaultThread
     def execute(self):
@@ -41,8 +38,7 @@ class Interface(FaultThread):
             # if we aren't exiting, keep running
             self.refresh()
             while not self.exit.is_set():
-                # self.refresh()
-                sleep(0.5)
+                sleep(THREAD_WAIT_TIME)
 
     # called when there is a new input character
     def current(self, current):
@@ -69,11 +65,3 @@ class Interface(FaultThread):
                 break
         self.stdscr.addnstr(1, 0, "Event: %s" % self.event, self.w)
         self.stdscr.refresh()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, e_type, e_value, e_traceback):
-        self.exit.set()
-        self.reader.__exit__(e_type, e_value, e_traceback)
-        self.join()

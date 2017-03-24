@@ -4,6 +4,8 @@ Sample_Period = 0.0001
 Web_Enable = True
 Command_On_Boot = True
 Recovery_Time = 6
+THREAD_WAIT_TIME = 0.2
+KEYBOARD_TIMEOUT_MS = 10
 Command_List = [
     "select",
     "enter",

@@ -11,67 +11,6 @@ from MatrixReader import MatrixReader
 from Lights import ShiftReg595
 from board_util import lookup, nada, COM
 
-buff = []
-
-class Decoder():
-
-    def __init__(self, state, functions):
-        if (state == "Options"):
-            self.lookup = lookup(partial(nada))
-            self.lookup["enter"] = partial(functions.nextcol)
-            self.lookup["select"] = partial(functions.shiftup)
-
-            self.lookup["e"] = self.lookup["enter"]
-            self.lookup["s"] = self.lookup["select"]
-
-
-        elif (state == "Game"):
-            self.lookup = lookup(partial(partial(functions.throw_dart)))
-            self.lookup["enter"] = partial(functions.next_player)
-            self.lookup["select"] = partial(nada)
-
-            self.lookup["e"] = self.lookup["enter"]
-            self.lookup["s"] = self.lookup["select"]
-
-        elif (state == "Winner"):
-            self.lookup = lookup(partial(nada))
-            self.lookup["enter"] = partial(functions.ready_to_exit)
-            self.lookup["select"] = partial(functions.ready_to_exit)
-
-            self.lookup["e"] = self.lookup["enter"]
-            self.lookup["s"] = self.lookup["select"]
-
-        else:
-            raise Exception("Invalid title for lookup table: " + str(state))
-
-    def action(self, command):
-        if (command in self.lookup):
-            self.lookup[command]()
-
-class Reader():
-
-    def __init__(self, screen):
-        self.screen = screen
-        self.cmd = ""
-
-    def refresh(self):
-        self.screen.nodelay(1)
-        inp = self.screen.getch()
-        self.screen.nodelay(0)
-        if (inp == curses.KEY_ENTER or inp == 10):
-            temp = self.cmd
-            self.cmd = ""
-            return temp
-        elif (inp != -1 and inp < 256):
-            self.cmd += chr(inp)
-        elif (inp == curses.KEY_BACKSPACE):
-            self.cmd = self.cmd[:-1]
-
-        return ""
-
-    def current(self):
-        return self.cmd
-
 class Hardware():
     def __init__(self):
         self.matrixReader = MatrixReader()
@@ -172,12 +111,3 @@ class Interface():
         self.screen.refresh()
 
         return run
-
-
-    def update(self, manager, send):
-        self.json = dumps(manager.gui_data())
-        send(self.json)
-
-    def end(self):
-        self.board.end()
-        curses.endwin()

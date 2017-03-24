@@ -1,6 +1,7 @@
 # this class is the top level interface before the manager functions are called
 from multiprocessing import Queue
 
+from Util import FaultThread
 from Boards.CMD.Interface import Interface as CMD
 from Boards.Test.Interface import Interface as Test
 
@@ -25,6 +26,14 @@ class SumInterface():
     def get_commands(self):
         return self.q
 
+    # @return: False if exceptions has not been thrown in child threads, True if exception has been thrown in child threads.  On true, ok, will re-throw exception
+    def ok(self):
+        if (FaultThread.ok()):
+            return True
+        else:
+            self.__exit__(None, None, None, 1)
+            return False
+
     # called when entering
     def __enter__(self):
         # enter all iface members
@@ -34,11 +43,13 @@ class SumInterface():
         return self
 
     # called when exiting
-    def __exit__(self, e_type, e_value, e_traceback):
+    def __exit__(self, e_type, e_value, e_traceback, timeout=None):
         # exit and join all iface members
         for i in self.iface:
             if (hasattr(i, '__exit__')):
-                i.__exit__(e_type, e_value, e_traceback)
+                i.__exit__(None, None, None)
 
         for i in self.iface:
-            i.join()
+            i.join(timeout)
+            if (i.is_alive()):
+                raise Exception("Thread still alive")
