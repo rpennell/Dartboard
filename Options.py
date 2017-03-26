@@ -1,7 +1,5 @@
 from collections import deque
 
-from debug_tools import *
-
 class Options():
 
     def __init__(self, table = []):

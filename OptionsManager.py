@@ -3,7 +3,6 @@ import types
 
 from Subset import Subset
 from Options import *
-from debug_tools import *
 
 class OptionsManager():
     def __init__(self, raise_event, looped = False):

@@ -7,7 +7,6 @@ from functools import partial
 
 from Boards.SumInterface import SumInterface
 from Manager import Manager
-from debug_tools import *
 from Web import *
 from Util import FaultThread
 
