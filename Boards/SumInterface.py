@@ -24,7 +24,8 @@ class SumInterface():
 
     # returns queue of commands
     def get_commands(self):
-        return self.q
+        if (self.ok()):
+            return self.q
 
     # @return: False if exceptions has not been thrown in child threads, True if exception has been thrown in child threads.  On true, ok, will re-throw exception
     def ok(self):

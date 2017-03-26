@@ -20,8 +20,8 @@ def loop():
         if (FaultThread.ok()):
             manager.action(q.get())
 
-    # if cmd_given == True:
-    #     update_all(manager.gui_data()["State"])
+    if cmd_given == True:
+        update_all(manager.gui_data())
 
 if __name__ == "__main__":
     manager = Manager()
