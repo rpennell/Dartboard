@@ -30,19 +30,19 @@ from tornado.options import define, options
 
 from json import dumps
 
-filehandler = logging.FileHandler(
-    filename = 'Web.log',
-    mode = 'a',
-    encoding = None,
-    delay = False
-)
-filehandler.setLevel(logging.INFO)
-logging.root.addHandler(filehandler)
+# filehandler = logging.FileHandler(
+#     filename = 'Logs/Web.log',
+#     mode = 'a',
+#     encoding = None,
+#     delay = False
+# )
+# filehandler.setLevel(logging.INFO)
 
 define("port", default=8888, help="run on the given port", type=int)
 define("debug", default=True, help="run in debug mode")
 
 class Application(tornado.web.Application):
+
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
@@ -98,6 +98,7 @@ class DataHandler(tornado.websocket.WebSocketHandler):
         cls.index += 1
 
 class CallbackContainer():
+
     def __init__(self, callback, IOLoop):
         self.IOLoop = IOLoop
         if (callable(callback)):
