@@ -10,6 +10,8 @@ from Manager import Manager
 from Web import *
 from Util import FaultThread
 
+import logging
+
 def loop():
     q = iface.get_commands()
 
