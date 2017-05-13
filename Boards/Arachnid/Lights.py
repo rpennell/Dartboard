@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-from multithreading import Queue
+from multiprocessing import Queue
 
 from Util import ShiftReg595, Collector, FaultThread
 

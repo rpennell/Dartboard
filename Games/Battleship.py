@@ -1,5 +1,4 @@
 from Options import Options, OptionsToken
-from game_util import SetIterator, point_lookup
 
 options = Options([
     OptionsToken("Players", "2", 2, (2, 0)),
@@ -31,6 +30,7 @@ options = Options([
 class Battleship():
     # intialize the game with the specified number of players
     def __init__(self, functions, Lives):
+        
         self.game = []
         self.functions = functions
 

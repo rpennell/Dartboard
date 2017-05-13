@@ -8,7 +8,6 @@ from functools import partial
 from Boards.SumInterface import SumInterface
 from Manager import Manager
 from Web import *
-from Util import FaultThread
 
 def loop():
     q = iface.get_commands()
@@ -16,8 +15,7 @@ def loop():
     cmd_given = False
     while(not q.empty()):
         cmd_given = True
-        if (FaultThread.ok()):
-            manager.action(q.get())
+        manager.action(q.get())
 
     if cmd_given == True:
         update_all(manager.gui_data())
